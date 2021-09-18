@@ -1,59 +1,138 @@
-<script context="module">
-	export const prerender = true;
-</script>
-
 <script>
-	import Counter from '$lib/Counter.svelte';
+	import supabase from '$lib/db';
+	let data = '',
+		add = false,
+		title = 'Enter Title Here',
+		code = 'Enter Code Here ';
+	function getData() {
+		return supabase.from('Ameen').select(`*`);
+	}
+	async function addData(title, code) {
+		await supabase.from('Ameen').insert({
+			title: title,
+			code: code
+		});
+		console.log('pass');
+		add = false;
+	}
+	function fallbackCopyTextToClipboard(text) {
+		var textArea = document.createElement('textarea');
+		textArea.value = text;
+
+		// Avoid scrolling to bottom
+		textArea.style.top = '0';
+		textArea.style.left = '0';
+		textArea.style.position = 'fixed';
+
+		document.body.appendChild(textArea);
+		textArea.focus();
+		textArea.select();
+
+		try {
+			var successful = document.execCommand('copy');
+			var msg = successful ? 'successful' : 'unsuccessful';
+			console.log('Fallback: Copying text command was ' + msg);
+		} catch (err) {
+			console.error('Fallback: Oops, unable to copy', err);
+		}
+
+		document.body.removeChild(textArea);
+	}
+	function copyTextToClipboard(text) {
+		if (!navigator.clipboard) {
+			fallbackCopyTextToClipboard(text);
+			return;
+		}
+		navigator.clipboard.writeText(text).then(
+			function () {
+				console.log('Async: Copying to clipboard was successful!');
+			},
+			function (err) {
+				console.error('Async: Could not copy text: ', err);
+			}
+		);
+	}
 </script>
 
-<svelte:head>
-	<title>Home</title>
-</svelte:head>
+<body>
+	<main>
+		{#await getData()}
+			heyy
+		{:then item}
+			{#each item.data as d}
+				<div class="item">
+					<section class="heading">
+						{d.title}
+						<button on:click={() => fallbackCopyTextToClipboard(d.code)}>Copy Code</button>
+					</section>
+				</div>
 
-<section>
-	<h1>
-		<div class="welcome">
-			<picture>
-				<source srcset="svelte-welcome.webp" type="image/webp" />
-				<img src="svelte-welcome.png" alt="Welcome" />
-			</picture>
-		</div>
+				<!-- <button on:click={addData}>vvv</button>
+<pre><textarea bind:value={data}/></pre>
+-->
+			{/each}
+		{/await}
 
-		to your new<br />SvelteKit app
-	</h1>
-
-	<h2>
-		try editing <strong>src/routes/index.svelte</strong>
-	</h2>
-
-	<Counter />
-</section>
+		{#if add == true}
+			<div id="adding">
+				<form class="box">
+					<h1>Add</h1>
+					<input type="Title" name="" placeholder="Title" />
+					<textarea name="code" bind:value={code} />
+					<button on:click={() => addData(title, code)}>Add</button>
+				</form>
+			</div>
+		{:else}
+			<button on:click={() => (add = true)}>Add</button>
+		{/if}
+	</main>
+</body>
 
 <style>
-	section {
+	.item {
+		width: 100vw;
+		height: fit-content;
 		display: flex;
-		flex-direction: column;
 		justify-content: center;
+		flex-direction: column;
 		align-items: center;
-		flex: 1;
+	}
+	.heading {
+		padding-top: 5px;
+		padding-bottom: 5px;
+		font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode',
+			Geneva, Verdana, sans-serif;
+		font-size: large;
+		color: #222222;
 	}
 
-	h1 {
-		width: 100%;
+	body {
+		margin: 0;
+		padding: 0;
+		font-family: sans-serif;
+		background-color: #66ccff;
 	}
-
-	.welcome {
-		position: relative;
-		width: 100%;
-		height: 0;
-		padding: 0 0 calc(100% * 495 / 2048) 0;
+	textarea {
+		background: none;
+		border: 2px solid rgb(28, 216, 230);
+		color: black;
+		width: 281px;
+		height: 108px;
 	}
-
-	.welcome img {
+	.box {
+		width: 300px;
+		padding: 40px;
 		position: absolute;
-		width: 100%;
-		height: 100%;
-		top: 0;
-		display: block;
+		top: 50%;
+		left: 50%;
+		border-radius: 24px;
+		transform: translate(-50%, -50%);
+		background: white;
+		text-align: center;
+	}
+	.box {
+		color: blue;
+		text-transform: upppercase;
+		font-weight: 500;
 	}
 </style>
