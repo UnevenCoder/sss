@@ -8,6 +8,7 @@
     return supabase.from("Ameen").select(`*`);
   }
   async function addData(title, code) {
+    console.log("adding");
     await supabase.from("Ameen").insert({
       title: title,
       code: code,
@@ -77,12 +78,12 @@
 
     {#if add == true}
       <div id="adding">
-        <form class="box">
+        <div class="box">
           <h1>Add</h1>
-          <input type="Title" name="" placeholder="Title" bind:value={title} />
+          <input type="text" name="" placeholder="Title" bind:value={title} />
           <textarea name="code" bind:value={code} />
           <button on:click={() => addData(title, code)}>Add</button>
-        </form>
+        </div>
       </div>
     {:else}
       <button on:click={() => (add = true)}>Add</button>
