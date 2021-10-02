@@ -1,5 +1,7 @@
 <script>
   import supabase from "$lib/db";
+  import { Stretch } from "svelte-loading-spinners";
+
   let data = "",
     add = false,
     title = undefined,
@@ -83,13 +85,14 @@
 
 <main>
   {#await getData()}
-    heyy
+    <section id="loader">
+      <Stretch size="60" color="#ffff00" unit="px" duration="0.5s" />
+    </section>
   {:then item}
-    {#each item.data as d}
+    {#each item.data as d, id}
       <span id="sss">{(obj[d.title] = [d.id, d.code])}</span>
-
       <div class="item">
-        <section class="heading">
+        <section id={id == 0 ? "zero" : ""} class="heading">
           <h5>{d.title}</h5>
           <div class="buttons">
             <button on:click={() => fallbackCopyTextToClipboard(d.code)}
@@ -104,27 +107,26 @@
 <pre><textarea bind:value={data}/></pre>
 -->
     {/each}
-  {/await}
 
-  {#if add == true}
-    <div id="adding">
-      <div class="box">
-        <h1>Add</h1>
-        <input
-          type="text"
-          name=""
-          placeholder="Enter title here"
-          bind:value={title}
-        />
-        <textarea name="code" bind:value={code} />
-        <button on:click={() => addData(title, code)}>Add</button>
-        <button on:click={() => (add = false)}>Cancel</button>
+    {#if add == true}
+      <div id="adding">
+        <div class="box">
+          <h1>Add</h1>
+          <input
+            type="text"
+            name=""
+            placeholder="Enter title here"
+            bind:value={title}
+          />
+          <textarea name="code" bind:value={code} />
+          <button on:click={() => addData(title, code)}>Add</button>
+          <button on:click={() => (add = false)}>Cancel</button>
+        </div>
       </div>
-    </div>
-  {:else}
-    <button id="aaa" on:click={() => (add = true)}>Add</button>
-  {/if}
-
+    {:else}
+      <button id="aaa" on:click={() => (add = true)}>Add</button>
+    {/if}
+  {/await}
   {#if edit == true}
     <span id="sss">{(c = obj[x][1])}</span>
     <textArea value={c} />
@@ -133,12 +135,11 @@
 
 <style>
   .item {
-    width: 100vw;
+    width: 75vw;
     height: fit-content;
     display: flex;
-    justify-content: center;
     flex-direction: column;
-    align-items: center;
+    margin-left: 70px;
   }
   .heading {
     padding-top: 5px;
@@ -168,7 +169,8 @@
     padding: 0;
     font-family: sans-serif;
     background-color: #222222;
-    color: yellow;
+    color: #ffff00;
+    text-transform: capitalize;
   }
   textarea {
     background: none;
@@ -215,13 +217,30 @@
     border: 2px dotted green;
   }
   #aaa {
-    justify-self: center;
+    margin-top: 50px;
+    align-self: center;
+    margin-left: 50vw;
+    margin-right: 50vw;
+    font-size: 20px;
+    padding: 10px;
   }
 
   .buttons {
     width: 100%;
+    margin-left: 50px;
   }
   #sss {
     display: none;
+  }
+  :global(#zero) {
+    margin-top: 30px;
+  }
+
+  #loader {
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
   }
 </style>
